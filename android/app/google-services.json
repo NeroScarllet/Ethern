@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "86864087870",
+    "project_id": "ethern-9cf13",
+    "storage_bucket": "ethern-9cf13.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86864087870:android:52092ce5aa9480ec963a6f",
+        "android_client_info": {
+          "package_name": "com.example.ethern"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBws0V0HzipG6P4f2ZwT4CDtCfcFJxh6TQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
