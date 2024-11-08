@@ -1,5 +1,6 @@
 // ignore_for_file: unrelated_type_equality_checks
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ethern/pages/home.dart';
 import 'package:ethern/pages/menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,11 +18,13 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _usernameController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -29,9 +32,14 @@ class _RegisterPageState extends State<RegisterPage> {
     if (passwordConfirmed()) {
       final navigator = Navigator.of(context);
       try {
+        // Create User
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim());
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        // Add user details
+        addUserDetails(_usernameController.text.trim());
+        
         navigator
             .push(MaterialPageRoute(builder: (context) => const MenuPage()));
       } on FirebaseAuthException catch (e) {
@@ -52,6 +60,12 @@ class _RegisterPageState extends State<RegisterPage> {
     } else {
       return false;
     }
+  }
+
+  Future addUserDetails(String username) async {
+    await FirebaseFirestore.instance.collection('users').add({
+      'username': username,
+    });
   }
 
   @override
@@ -97,7 +111,32 @@ class _RegisterPageState extends State<RegisterPage> {
                 'Registre-se para iniciar sua aventura!',
                 style: TextStyle(color: Colors.black),
               ),
+
               SizedBox(height: 50),
+              // Campo de texto - Nome de Usuário
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(.7),
+                    border: Border.all(color: Colors.blue, width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: TextField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Nome de Usuário',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 10),
+              // Campo de texto - Email
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Container(
@@ -118,7 +157,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
+
               SizedBox(height: 10),
+
+              // Campo de texto - Senha
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Container(
@@ -140,7 +182,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
+
               SizedBox(height: 10),
+
+              // Campo de texto - Confirmar Senha
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Container(
