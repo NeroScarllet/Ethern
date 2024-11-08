@@ -1,3 +1,4 @@
+import 'package:ethern/pages/forgot_pw_page.dart';
 import 'package:ethern/pages/home.dart';
 import 'package:ethern/pages/menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,7 +25,13 @@ class _LoginState extends State<Login> {
       );
       navigator.push(MaterialPageRoute(builder: (context) => const MenuPage()));
     } on FirebaseAuthException catch (e) {
-      print(e);
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text(e.message.toString()),
+            );
+          });
     }
   }
 
@@ -79,6 +86,8 @@ class _LoginState extends State<Login> {
                 style: TextStyle(color: Colors.black),
               ),
               SizedBox(height: 50),
+
+              // Campo de texto - Email
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Container(
@@ -99,7 +108,10 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
+
               SizedBox(height: 10),
+
+              // Campo de texto - Senha
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Container(
@@ -121,7 +133,37 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
+
               SizedBox(height: 10),
+
+              // Link - Esqueceu a senha?
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return ForgotPasswordPage();
+                          }),
+                        );
+                      },
+                      child: Text(
+                        'Esqueceu a senha?',
+                        style: TextStyle(
+                            color: Colors.blue, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              // Botão - Entrar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: GestureDetector(
@@ -143,7 +185,10 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
+
               SizedBox(height: 25),
+
+              // Link - Registre-se
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
