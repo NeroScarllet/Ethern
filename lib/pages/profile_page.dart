@@ -1,20 +1,18 @@
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
-import 'package:ethern/pages/home.dart';
-import 'package:ethern/pages/profile_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ethern/pages/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-class MenuPage extends StatefulWidget {
-  const MenuPage({super.key});
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
 
   @override
-  State<MenuPage> createState() => _MenuPageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _MenuPageState extends State<MenuPage> {
+class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
     MenuPage(),
@@ -35,25 +33,6 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Logou'),
-            MaterialButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const HomePage()));
-              },
-              color: Colors.blue,
-              child: Text('Deslogar'),
-            )
-          ],
-        ),
-      ),
-
-      // Botton Nav Bar
       bottomNavigationBar: Container(
         color: Colors.black,
         child: Padding(
@@ -86,7 +65,7 @@ class _MenuPageState extends State<MenuPage> {
                 text: 'Perfil',
               ),
             ],
-            selectedIndex: 0,
+            selectedIndex: 4,
             onTabChange: _onTabChange,
           ),
         ),
