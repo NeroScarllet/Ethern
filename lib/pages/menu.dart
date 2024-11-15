@@ -1,8 +1,11 @@
+// ignore_for_file: sized_box_for_whitespace
+
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
 import 'package:ethern/pages/home.dart';
 import 'package:ethern/pages/profile_page.dart';
+import 'package:ethern/util/Preview_tile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -35,11 +38,119 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      appBar: AppBar(
+        elevation: 0,
+        leading: Icon(Icons.menu),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Icon(Icons.person),
+          )
+        ],
+      ),
+      backgroundColor: Colors.grey[300],
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Logou'),
+            Padding(
+              padding: const EdgeInsets.only(right: 25.0, left: 25.0, top: 15.0),
+              child: Text(
+                'Olá usuário, bem vindo a Ethern!',
+                style: TextStyle(
+                  fontSize: 36,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  fillColor: Colors.grey[500],
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.black,
+                  ),
+                  hintText: 'Encontre o que está procurando..',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade600)),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade600)),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: Row(
+                children: [
+                  Text(
+                    'Personagens',
+                    style: TextStyle(color: Colors.black, fontSize: 20),
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.black,)
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Container(
+              height: 340,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  PreviewTile(
+                    ImagePath: 'lib/assets/images/Katsuo.png',
+                    Name: 'Katsuo Hitsuki',
+                    Race: 'Humano',
+                    Campaign: 'Limiar Crescente',
+                  ),
+                  PreviewTile(
+                    ImagePath: 'lib/assets/images/Katsuo.png',
+                    Name: 'Katsuo Hitsuki',
+                    Race: 'Humano',
+                    Campaign: 'Limiar Crescente',
+                  ),
+                  PreviewTile(
+                    ImagePath: 'lib/assets/images/Katsuo.png',
+                    Name: 'Katsuo Hitsuki',
+                    Race: 'Humano',
+                    Campaign: 'Limiar Crescente',
+                  ),
+                  PreviewTile(
+                    ImagePath: 'lib/assets/images/Katsuo.png',
+                    Name: 'Katsuo Hitsuki',
+                    Race: 'Humano',
+                    Campaign: 'Limiar Crescente',
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: Row(
+                children: [
+                  Text(
+                    'Campanhas',
+                    style: TextStyle(color: Colors.black, fontSize: 20),
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.black,)
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 15,
+            ),
             MaterialButton(
               onPressed: () {
                 FirebaseAuth.instance.signOut();
@@ -48,7 +159,7 @@ class _MenuPageState extends State<MenuPage> {
               },
               color: Colors.blue,
               child: Text('Deslogar'),
-            )
+            ),
           ],
         ),
       ),
