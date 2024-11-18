@@ -45,6 +45,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
         elevation: 0,
+        backgroundColor: Colors.black,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

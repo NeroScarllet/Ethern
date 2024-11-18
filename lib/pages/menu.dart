@@ -5,7 +5,8 @@ import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
 import 'package:ethern/pages/home.dart';
 import 'package:ethern/pages/profile_page.dart';
-import 'package:ethern/util/Preview_tile.dart';
+import 'package:ethern/util/campaign_preview_tile.dart';
+import 'package:ethern/util/character_preview_tile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -39,6 +40,8 @@ class _MenuPageState extends State<MenuPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("Menu"),
+        backgroundColor: Colors.black,
         elevation: 0,
         leading: Icon(Icons.menu),
         actions: [
@@ -53,7 +56,8 @@ class _MenuPageState extends State<MenuPage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 25.0, left: 25.0, top: 15.0),
+              padding:
+                  const EdgeInsets.only(right: 25.0, left: 25.0, top: 15.0),
               child: Text(
                 'Olá usuário, bem vindo a Ethern!',
                 style: TextStyle(
@@ -65,70 +69,118 @@ class _MenuPageState extends State<MenuPage> {
             SizedBox(
               height: 25,
             ),
+         
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  fillColor: Colors.grey[500],
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.black,
-                  ),
-                  hintText: 'Encontre o que está procurando..',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade600)),
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade600)),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CharacterListPage()));
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'Personagens',
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Colors.black,
+                    )
+                  ],
                 ),
               ),
             ),
             SizedBox(
-              height: 25,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: Row(
-                children: [
-                  Text(
-                    'Personagens',
-                    style: TextStyle(color: Colors.black, fontSize: 20),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.black,)
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 15,
+              height: 10,
             ),
             Container(
               height: 340,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  PreviewTile(
+                  CharacterPreviewTile(
                     ImagePath: 'lib/assets/images/Katsuo.png',
                     Name: 'Katsuo Hitsuki',
                     Race: 'Humano',
                     Campaign: 'Limiar Crescente',
                   ),
-                  PreviewTile(
+                  CharacterPreviewTile(
                     ImagePath: 'lib/assets/images/Katsuo.png',
                     Name: 'Katsuo Hitsuki',
                     Race: 'Humano',
                     Campaign: 'Limiar Crescente',
                   ),
-                  PreviewTile(
+                  CharacterPreviewTile(
                     ImagePath: 'lib/assets/images/Katsuo.png',
                     Name: 'Katsuo Hitsuki',
                     Race: 'Humano',
                     Campaign: 'Limiar Crescente',
                   ),
-                  PreviewTile(
+                  CharacterPreviewTile(
                     ImagePath: 'lib/assets/images/Katsuo.png',
                     Name: 'Katsuo Hitsuki',
                     Race: 'Humano',
                     Campaign: 'Limiar Crescente',
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CampaignListPage()));
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'Campanhas',
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Colors.black,
+                    )
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            Container(
+              height: 445,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  CampaignPreviewTile(
+                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                    Name: 'Limiar Crescente',
+                  ),
+                  CampaignPreviewTile(
+                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                    Name: 'Limiar Crescente',
+                  ),
+                  CampaignPreviewTile(
+                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                    Name: 'Limiar Crescente',
+                  ),
+                  CampaignPreviewTile(
+                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                    Name: 'Limiar Crescente',
+                  ),
+                  CampaignPreviewTile(
+                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                    Name: 'Limiar Crescente',
                   ),
                 ],
               ),
@@ -138,18 +190,39 @@ class _MenuPageState extends State<MenuPage> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: Row(
-                children: [
-                  Text(
-                    'Campanhas',
-                    style: TextStyle(color: Colors.black, fontSize: 20),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.black,)
-                ],
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const D20Page()));
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'Girar o D20',
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Colors.black,
+                    )
+                  ],
+                ),
               ),
             ),
             SizedBox(
               height: 15,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const D20Page()));
+                },
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset("lib/assets/images/d20.png")),
+              ),
             ),
             MaterialButton(
               onPressed: () {

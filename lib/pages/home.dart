@@ -8,13 +8,13 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: Text(
           'Ethern',
-          style: TextStyle(color: Colors.white, fontFamily: 'MedievalSharp'),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: Colors.black,
       ),
       body: Center(
         child: Container(

@@ -74,8 +74,8 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         title: Text(
           'Login',
-          style: TextStyle(fontFamily: 'MedievalSharp'),
         ),
+        backgroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
         leading: IconButton(

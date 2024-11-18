@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 
-  class PreviewTile extends StatelessWidget {
+  class CharacterPreviewTile extends StatelessWidget {
 
     final String ImagePath;
     final String Name;
     final String Race;
     final String Campaign;
 
-  const PreviewTile({super.key, 
+  const CharacterPreviewTile({super.key, 
     required this.ImagePath,
     required this.Name,
     required this.Race,
