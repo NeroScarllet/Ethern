@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/menu.dart';
@@ -14,6 +16,8 @@ class D20Page extends StatefulWidget {
 
 class _D20PageState extends State<D20Page> {
   int _selectedIndex = 0;
+  int _randomNumber = 20;
+
   final List<Widget> _pages = [
     MenuPage(),
     CharacterListPage(),
@@ -30,9 +34,84 @@ class _D20PageState extends State<D20Page> {
     });
   }
 
+  void _rollDice() {
+    setState(() {
+      _randomNumber =
+          Random().nextInt(20) + 1; // Gera um número aleatório de 1 a 20
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("D20"),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: Icon(Icons.menu),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Icon(Icons.person),
+          )
+        ],
+      ),
+      backgroundColor: Colors.grey[300],
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Aposte o seu futuro',
+              style: TextStyle(
+                fontSize: 36,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Spacer(),
+          Stack(
+            alignment: AlignmentDirectional.center,
+            children: [
+              Image.asset("lib/assets/images/d20.png"),
+              Text(
+                '$_randomNumber',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              )
+            ],
+          ),
+          Spacer(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+            child: GestureDetector(
+              onTap: _rollDice,
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(12)),
+                child: Center(
+                  child: Text(
+                    'Rodar dado',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 30,
+          )
+        ],
+      ),
       // Botton Nav Bar
       bottomNavigationBar: Container(
         color: Colors.black,

@@ -33,6 +33,19 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Perfil"),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: Icon(Icons.menu),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Icon(Icons.person),
+          )
+        ],
+      ),
+      backgroundColor: Colors.grey[300],
       bottomNavigationBar: Container(
         color: Colors.black,
         child: Padding(

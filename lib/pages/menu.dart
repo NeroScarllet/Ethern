@@ -221,7 +221,7 @@ class _MenuPageState extends State<MenuPage> {
                 },
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset("lib/assets/images/d20.png")),
+                    child: Image.asset("lib/assets/images/d20_preview.png")),
               ),
             ),
             MaterialButton(

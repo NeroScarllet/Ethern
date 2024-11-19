@@ -58,7 +58,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
           Padding(
             padding: const EdgeInsets.only(right: 25.0, left: 25.0, top: 15.0),
             child: Text(
-              'Conte a história do universo de seu personagem!',
+              'Conte a sua história!',
               style: TextStyle(
                 fontSize: 36,
                 color: Colors.black,
@@ -90,7 +90,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
             height: 10,
           ),
           Container(
-            height: MediaQuery.sizeOf(context).height - 435,
+            height: MediaQuery.sizeOf(context).height - 335,
             child: ListView(
               scrollDirection: Axis.vertical,
               children: [
