@@ -90,8 +90,9 @@ class _CharacterListPageState extends State<CharacterListPage> {
             height: 10,
           ),
           Container(
-            height: MediaQuery.sizeOf(context).height - 385,
+            height: MediaQuery.sizeOf(context).height /2,
             child: ListView(
+              shrinkWrap: true,
               scrollDirection: Axis.vertical,
               children: [
                 CharacterPreviewTile2(
@@ -127,10 +128,11 @@ class _CharacterListPageState extends State<CharacterListPage> {
                   Campaign: 'Limiar Crescente',
                 ),
               ],
-            ),
-          ),
+            ),            
+          ), 
         ]),
       ),
+    
       // Botton Nav Bar
       bottomNavigationBar: Container(
         color: Colors.black,

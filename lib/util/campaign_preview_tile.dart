@@ -18,7 +18,7 @@ class CampaignPreviewTile extends StatelessWidget {
       padding: const EdgeInsets.only(left: 25.0, bottom: 25.0),
       child: Container(
         padding: EdgeInsets.all(12),
-        width: 350,
+        
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: Colors.black54,
@@ -28,7 +28,7 @@ class CampaignPreviewTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(ImagePath, width: 350,),
+              child: Image.asset(ImagePath, width: 270,),
             ),
             Padding(
               padding:
@@ -39,7 +39,7 @@ class CampaignPreviewTile extends StatelessWidget {
                 children: [
                   Text(
                     Name,
-                    style: TextStyle(fontSize: 30, color: Colors.white, fontFamily: 'MedievalSharp'),
+                    style: TextStyle(fontSize: 25, color: Colors.white, fontFamily: 'MedievalSharp'),
                   ),
                 ],
               ),

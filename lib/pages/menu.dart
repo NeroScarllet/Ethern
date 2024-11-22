@@ -158,7 +158,7 @@ class _MenuPageState extends State<MenuPage> {
               height: 15,
             ),
             Container(
-              height: 445,
+              height: 400,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [

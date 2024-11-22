@@ -74,7 +74,7 @@ class _D20PageState extends State<D20Page> {
           Stack(
             alignment: AlignmentDirectional.center,
             children: [
-              Image.asset("lib/assets/images/d20.png"),
+              Image.asset("lib/assets/images/d20.png", height: 350,),
               Text(
                 '$_randomNumber',
                 style: TextStyle(
