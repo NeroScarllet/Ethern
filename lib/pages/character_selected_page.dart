@@ -1,37 +1,16 @@
-import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
-import 'package:ethern/pages/d20_page.dart';
-import 'package:ethern/pages/menu.dart';
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class CharacterSelectedPage extends StatefulWidget {
+  const CharacterSelectedPage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<CharacterSelectedPage> createState() => _CharacterSelectedPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  int _selectedIndex = 0;
+class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
   final double coverHeight = 280;
   final double profileHeight = 144;
-
-  final List<Widget> _pages = [
-    MenuPage(),
-    CharacterListPage(),
-    CampaignListPage(),
-    D20Page(),
-    ProfilePage(),
-  ];
-
-  void _onTabChange(int index) {
-    setState(() {
-      _selectedIndex = index;
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => _pages[_selectedIndex]));
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +19,15 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text("Perfil"),
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: Icon(Icons.menu),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const CharacterListPage()));
+          },
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -58,43 +45,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           buildContent(),
         ],
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.black,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
-          child: GNav(
-            backgroundColor: Colors.black,
-            color: Colors.white,
-            activeColor: Colors.blue,
-            gap: 8,
-            padding: EdgeInsets.all(16),
-            tabs: [
-              GButton(
-                icon: Icons.home,
-                text: 'Menu',
-              ),
-              GButton(
-                icon: Icons.group,
-                text: 'Personagens',
-              ),
-              GButton(
-                icon: Icons.book,
-                text: 'Campanhas',
-              ),
-              GButton(
-                icon: Icons.casino,
-                text: 'D20',
-              ),
-              GButton(
-                icon: Icons.person,
-                text: 'Perfil',
-              ),
-            ],
-            selectedIndex: 4,
-            onTabChange: _onTabChange,
-          ),
-        ),
       ),
     );
   }
@@ -121,7 +71,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Center(
               child: Text(
-                'Nome do usuário',
+                'Nome do personagem',
                 style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -130,7 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             Center(
               child: Text(
-                'Título do usuário',
+                'Campanha do personagem',
                 style:
                     TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
               ),
@@ -169,9 +119,76 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-             SizedBox(
+            Divider(),
+            Text(
+              'Nome do personagem',
+              style: TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.7),
+                border: Border.all(color: Colors.blue, width: 2),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: TextField(
+                  controller: null,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Nome do personagem',
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
               height: 10,
             ),
+            Text(
+              'Nome da campanha',
+              style: TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.7),
+                border: Border.all(color: Colors.blue, width: 2),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: TextField(
+                  controller: null,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Nome da campanha',
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Text(
+              'Raça',
+              style: TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.7),
+                border: Border.all(color: Colors.blue, width: 2),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: TextField(
+                  controller: null,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Raça',
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            )
           ],
         ),
       );

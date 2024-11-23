@@ -1,5 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:ethern/pages/campaign_selected_page.dart';
 import 'package:flutter/material.dart';
 
 class CampaignPreviewTile2 extends StatelessWidget {
@@ -18,47 +19,55 @@ class CampaignPreviewTile2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: Container(
-        padding: EdgeInsets.all(8),
-        width: 200,
-        height: 140,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          color: Colors.black54,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.asset(
-              ImagePath,
-              height: 120,
-              width: 120,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CampaignSelectedPage(),
             ),
-            SizedBox(width: 8), 
-            Flexible(
-              child: Container(
-                height: 200,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment
-                      .start, 
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      Name,
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                    
-                    Text(
-                      Description,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 4,
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),                
-                  ],
+          );
+        },
+        child: Container(
+          padding: EdgeInsets.all(8),
+          width: 200,
+          height: 140,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.black54,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset(
+                ImagePath,
+                height: 120,
+                width: 120,
+              ),
+              SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  height: 200,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        Name,
+                        style: TextStyle(fontSize: 20, color: Colors.white),
+                      ),
+                      Text(
+                        Description,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 4,
+                        style: TextStyle(color: Colors.grey[400]),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
