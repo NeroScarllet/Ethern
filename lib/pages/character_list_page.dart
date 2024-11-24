@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
+import 'package:ethern/pages/character_selected_page.dart';
 import 'package:ethern/pages/d20_page.dart';
 import 'package:ethern/pages/menu.dart';
 import 'package:ethern/pages/profile_page.dart';
 import 'package:ethern/util/character_preview_tile2.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -15,6 +18,7 @@ class CharacterListPage extends StatefulWidget {
 
 class _CharacterListPageState extends State<CharacterListPage> {
   int _selectedIndex = 0;
+
   final List<Widget> _pages = [
     MenuPage(),
     CharacterListPage(),
@@ -47,7 +51,14 @@ class _CharacterListPageState extends State<CharacterListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CharacterSelectedPage(),
+            ),
+          );
+        },
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue,
         child: Icon(Icons.add),
@@ -90,49 +101,41 @@ class _CharacterListPageState extends State<CharacterListPage> {
             height: 10,
           ),
           Container(
-            height: MediaQuery.sizeOf(context).height /2,
-            child: ListView(
-              shrinkWrap: true,
-              scrollDirection: Axis.vertical,
-              children: [
-                CharacterPreviewTile2(
-                  ImagePath: 'lib/assets/images/Katsuo.png',
-                  Name: 'Katsuo Hitsuki',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                  Race: 'Humano',
-                  Campaign: 'Limiar Crescente',
-                ),
-                CharacterPreviewTile2(
-                  ImagePath: 'lib/assets/images/Katsuo.png',
-                  Name: 'Katsuo Hitsuki',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                  Race: 'Humano',
-                  Campaign: 'Limiar Crescente',
-                ),
-                CharacterPreviewTile2(
-                  ImagePath: 'lib/assets/images/Katsuo.png',
-                  Name: 'Katsuo Hitsuki',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                  Race: 'Humano',
-                  Campaign: 'Limiar Crescente',
-                ),
-                CharacterPreviewTile2(
-                  ImagePath: 'lib/assets/images/Katsuo.png',
-                  Name: 'Katsuo Hitsuki',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                  Race: 'Humano',
-                  Campaign: 'Limiar Crescente',
-                ),
-              ],
-            ),            
-          ), 
+            height: MediaQuery.sizeOf(context).height / 2,
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .collection('characters')
+                  .snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('Nenhum personagem encontrado'));
+                }
+                return ListView(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  children: snapshot.data!.docs.map((document) {
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+                    return CharacterPreviewTile2(
+                      ImagePath: 'lib/assets/images/Katsuo.png',
+                      Name: data['nome'] ?? 'Sem Nome',
+                      Description: data['sobre'] ?? 'Sem Descrição',
+                      Race: data['raca'] ?? 'Sem Raça',
+                      Campaign: data['campanha'] ?? 'Sem Campanha',
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
         ]),
       ),
-    
+
       // Botton Nav Bar
       bottomNavigationBar: Container(
         color: Colors.black,

@@ -7,12 +7,14 @@ class CampaignPreviewTile2 extends StatelessWidget {
   final String ImagePath;
   final String Name;
   final String Description;
+  final String campaignId; // Adicionado para passar o ID da campanha
 
   const CampaignPreviewTile2({
     super.key,
     required this.ImagePath,
     required this.Name,
     required this.Description,
+    required this.campaignId, // Adicionado para receber o ID da campanha
   });
 
   @override
@@ -24,7 +26,8 @@ class CampaignPreviewTile2 extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const CampaignSelectedPage(),
+              builder: (context) => CampaignSelectedPage(
+                  campaignId: campaignId), // Passando o ID da campanha
             ),
           );
         },

@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ethern/pages/character_list_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CharacterSelectedPage extends StatefulWidget {
@@ -8,9 +10,161 @@ class CharacterSelectedPage extends StatefulWidget {
   State<CharacterSelectedPage> createState() => _CharacterSelectedPageState();
 }
 
+class Character {
+  String nome;
+  String sobre;
+  String campanha;
+  String raca;
+
+  Character(
+      {required this.nome,
+      required this.sobre,
+      required this.campanha,
+      required this.raca});
+
+  @override
+  String toString() {
+    return 'Character(nome: $nome, sobre: $sobre, campanha: $campanha, raca: $raca)';
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'nome': nome,
+      'sobre': sobre,
+      'campanha': campanha,
+      'raca': raca,
+    };
+  }
+}
+
 class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
   final double coverHeight = 280;
   final double profileHeight = 144;
+  final _nameController = TextEditingController();
+  final _aboutController = TextEditingController();
+  final _campaignController = TextEditingController();
+  final _raceController = TextEditingController();
+  String? characterId; // Variable to hold the character ID
+
+  Future createCharacter() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      // Exibir uma mensagem de erro se nenhum usuário estiver logado
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Erro'),
+            content: Text('Nenhum usuário está logado.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    String userId = currentUser.uid;
+
+    Character character = Character(
+      nome: _nameController.text,
+      sobre: _aboutController.text,
+      campanha: _campaignController.text,
+      raca: _raceController.text,
+    );
+
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    try {
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('characters')
+          .add(character.toMap());
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const CharacterListPage()));
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text("Personagem adicionado com sucesso!"),
+          );
+        },
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text("Erro ao adicionar personagem: $e"),
+          );
+        },
+      );
+    }
+  }
+
+  Future deleteCharacter() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null || characterId == null) {
+      // Exibir uma mensagem de erro se nenhum usuário estiver logado ou characterId for nulo
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Erro'),
+            content: Text('Nenhum usuário está logado ou characterId está vazio.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    String userId = currentUser.uid;
+
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    try {
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('characters')
+          .doc(characterId)
+          .delete();
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const CharacterListPage()));
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text("Personagem deletado com sucesso!"),
+          );
+        },
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text("Erro ao deletar personagem: $e"),
+          );
+        },
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +198,7 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
             height: 7,
           ),
           buildContent(),
+          SizedBox(height: 10,)
         ],
       ),
     );
@@ -110,11 +265,10 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
                 child: TextField(
                   keyboardType: TextInputType.multiline,
                   maxLines: 10,
-                  controller: null,
+                  controller: _aboutController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText:
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum',
+                    hintText: '',
                   ),
                 ),
               ),
@@ -132,7 +286,7 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: TextField(
-                  controller: null,
+                  controller: _nameController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Nome do personagem',
@@ -155,7 +309,7 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: TextField(
-                  controller: null,
+                  controller: _campaignController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Nome da campanha',
@@ -178,7 +332,7 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: TextField(
-                  controller: null,
+                  controller: _raceController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Raça',
@@ -188,7 +342,52 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
             ),
             SizedBox(
               height: 10,
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: GestureDetector(
+                onTap: createCharacter,
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Center(
+                    child: Text(
+                      'Salvar Personagem',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: GestureDetector(
+                onTap: deleteCharacter,
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Center(
+                    child: Text(
+                      'Deletar Personagem',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -202,6 +401,7 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
           fit: BoxFit.cover,
         ),
       );
+
   Widget buildProfileImage() => Container(
         padding: EdgeInsets.all(4), // Adiciona um padding para a borda
         decoration: BoxDecoration(

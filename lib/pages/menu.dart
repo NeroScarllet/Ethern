@@ -1,5 +1,6 @@
 // ignore_for_file: sized_box_for_whitespace
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
@@ -69,7 +70,6 @@ class _MenuPageState extends State<MenuPage> {
             SizedBox(
               height: 25,
             ),
-         
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: GestureDetector(
@@ -98,34 +98,33 @@ class _MenuPageState extends State<MenuPage> {
             ),
             Container(
               height: 340,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  CharacterPreviewTile(
-                    ImagePath: 'lib/assets/images/Katsuo.png',
-                    Name: 'Katsuo Hitsuki',
-                    Race: 'Humano',
-                    Campaign: 'Limiar Crescente',
-                  ),
-                  CharacterPreviewTile(
-                    ImagePath: 'lib/assets/images/Katsuo.png',
-                    Name: 'Katsuo Hitsuki',
-                    Race: 'Humano',
-                    Campaign: 'Limiar Crescente',
-                  ),
-                  CharacterPreviewTile(
-                    ImagePath: 'lib/assets/images/Katsuo.png',
-                    Name: 'Katsuo Hitsuki',
-                    Race: 'Humano',
-                    Campaign: 'Limiar Crescente',
-                  ),
-                  CharacterPreviewTile(
-                    ImagePath: 'lib/assets/images/Katsuo.png',
-                    Name: 'Katsuo Hitsuki',
-                    Race: 'Humano',
-                    Campaign: 'Limiar Crescente',
-                  ),
-                ],
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(FirebaseAuth.instance.currentUser?.uid)
+                    .collection('characters')
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(child: Text('Nenhum personagem encontrado'));
+                  }
+                  return ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: snapshot.data!.docs.map((document) {
+                      Map<String, dynamic> data =
+                          document.data() as Map<String, dynamic>;
+                      return CharacterPreviewTile(
+                        ImagePath: 'lib/assets/images/Katsuo.png',
+                        Name: data['nome'] ?? 'Sem Nome',
+                        Race: data['raca'] ?? 'Sem Raça',
+                        Campaign: data['campanha'] ?? 'Sem Campanha',
+                      );
+                    }).toList(),
+                  );
+                },
               ),
             ),
             SizedBox(
@@ -159,30 +158,32 @@ class _MenuPageState extends State<MenuPage> {
             ),
             Container(
               height: 400,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  CampaignPreviewTile(
-                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                    Name: 'Limiar Crescente',
-                  ),
-                  CampaignPreviewTile(
-                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                    Name: 'Limiar Crescente',
-                  ),
-                  CampaignPreviewTile(
-                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                    Name: 'Limiar Crescente',
-                  ),
-                  CampaignPreviewTile(
-                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                    Name: 'Limiar Crescente',
-                  ),
-                  CampaignPreviewTile(
-                    ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                    Name: 'Limiar Crescente',
-                  ),
-                ],
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(FirebaseAuth.instance.currentUser?.uid)
+                    .collection('campaigns')
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(child: Text('Nenhuma campanha encontrada'));
+                  }
+                  return ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: snapshot.data!.docs.map((document) {
+                      Map<String, dynamic> data =
+                          document.data() as Map<String, dynamic>;
+                      return CampaignPreviewTile(
+                        ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                        Name: data['nome'] ?? 'Sem Nome',
+                        campaignId: document.id, // Adicionado o campaignId
+                      );
+                    }).toList(),
+                  );
+                },
               ),
             ),
             SizedBox(

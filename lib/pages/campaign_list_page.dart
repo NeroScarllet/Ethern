@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ethern/pages/campaign_selected_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
 import 'package:ethern/pages/menu.dart';
 import 'package:ethern/pages/profile_page.dart';
 import 'package:ethern/util/campaign_preview_tile2.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -47,7 +50,14 @@ class _CampaignListPageState extends State<CampaignListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CampaignSelectedPage(), // Novo!
+            ),
+          );
+        },
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue,
         child: Icon(Icons.add),
@@ -91,45 +101,49 @@ class _CampaignListPageState extends State<CampaignListPage> {
           ),
           Container(
             height: MediaQuery.sizeOf(context).height - 335,
-            child: ListView(
-              scrollDirection: Axis.vertical,
-              children: [
-                CampaignPreviewTile2(
-                  ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                  Name: 'Limiar Crescente',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                ),
-                CampaignPreviewTile2(
-                  ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                  Name: 'Limiar Crescente',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                ),
-                CampaignPreviewTile2(
-                  ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                  Name: 'Limiar Crescente',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                ),
-                CampaignPreviewTile2(
-                  ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                  Name: 'Limiar Crescente',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                ),
-                CampaignPreviewTile2(
-                  ImagePath: 'lib/assets/images/LimiarCrescente.png',
-                  Name: 'Limiar Crescente',
-                  Description:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-                ),
-              ],
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .collection('campaigns')
+                  .snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('Nenhuma campanha encontrada'));
+                }
+                return ListView(
+                  scrollDirection: Axis.vertical,
+                  children: snapshot.data!.docs.map((document) {
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CampaignSelectedPage(
+                              campaignId: document.id,
+                            ),
+                          ),
+                        );
+                      },
+                      child: CampaignPreviewTile2(
+                        ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                        Name: data['nome'] ?? 'Sem Nome',
+                        Description: data['sobre'] ?? 'Sem Descrição',
+                        campaignId: document.id,
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
             ),
           ),
         ]),
       ),
-      // Botton Nav Bar
       bottomNavigationBar: Container(
         color: Colors.black,
         child: Padding(

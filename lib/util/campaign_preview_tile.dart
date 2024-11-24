@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 class CampaignPreviewTile extends StatelessWidget {
   final String ImagePath;
   final String Name;
+  final String campaignId; // Adicionado para passar o ID da campanha
 
   const CampaignPreviewTile({
     super.key,
     required this.ImagePath,
     required this.Name,
+    required this.campaignId, // Adicionado para receber o ID da campanha
   });
 
   @override
@@ -22,13 +24,12 @@ class CampaignPreviewTile extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const CampaignSelectedPage(),
+              builder: (context) => CampaignSelectedPage(campaignId: campaignId), // Passando o ID da campanha
             ),
           );
         },
         child: Container(
           padding: EdgeInsets.all(12),
-          
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: Colors.black54,
@@ -38,14 +39,12 @@ class CampaignPreviewTile extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(ImagePath, width: 270,),
+                child: Image.asset(ImagePath, width: 270),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8),
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
-        
                   children: [
                     Text(
                       Name,
