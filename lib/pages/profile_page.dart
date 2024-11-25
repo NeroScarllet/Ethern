@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
@@ -16,6 +18,13 @@ class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 0;
   final double coverHeight = 280;
   final double profileHeight = 144;
+  final TextEditingController _aboutController = TextEditingController();
+  final TextEditingController _urlController =
+      TextEditingController(); // Controller para a URL da imagem
+  String?
+      _profileImageUrl; // Adicionado para armazenar a URL da imagem de perfil
+  String _username =
+      'Nome de usuário não encontrado'; // Adicionado para armazenar o nome de usuário
 
   final List<Widget> _pages = [
     MenuPage(),
@@ -34,6 +43,110 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _showUrlDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible:
+          true, // Permite que o diálogo seja fechado ao clicar fora dele
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Insira a URL da nova imagem'),
+          content: TextField(
+            controller: _urlController,
+            decoration: InputDecoration(hintText: "URL da imagem"),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Salvar'),
+              onPressed: () {
+                setState(() {
+                  _profileImageUrl = _urlController.text;
+                });
+                _saveProfileImageUrl();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _saveProfileImageUrl() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && _profileImageUrl != null) {
+      String userId = currentUser.uid;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'profileImageUrl': _profileImageUrl});
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      String userId = currentUser.uid;
+
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!documentSnapshot.exists) {
+        // Se o documento não existir, cria um novo documento com os dados padrão.
+        await FirebaseFirestore.instance.collection('users').doc(userId).set({
+          'about': '',
+          'profileImageUrl':
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU',
+          'username':
+              'Nome de usuário não encontrado', // Adicionado campo padrão de username
+        });
+        documentSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
+      }
+
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data =
+            documentSnapshot.data() as Map<String, dynamic>;
+
+        setState(() {
+          _aboutController.text = data['about'] ?? '';
+          _profileImageUrl = data['profileImageUrl'];
+          _username = data['username'] ??
+              'Nome de usuário não encontrado'; // Carregar o nome de usuário
+        });
+      }
+    }
+  }
+
+  Future<void> _saveUserData() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      String userId = currentUser.uid;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'about': _aboutController.text});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -44,8 +157,14 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.person),
-          )
+            child: CircleAvatar(
+              radius: 18,
+              backgroundImage: _profileImageUrl != null
+                  ? NetworkImage(_profileImageUrl!)
+                  : NetworkImage(
+                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+            ),
+          ),
         ],
       ),
       backgroundColor: Colors.grey[300],
@@ -58,6 +177,11 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           buildContent(),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _saveUserData,
+        backgroundColor: Colors.blue, // Salvar os dados ao clicar no botão
+        child: Icon(Icons.save),
       ),
       bottomNavigationBar: Container(
         color: Colors.black,
@@ -121,18 +245,11 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Center(
               child: Text(
-                'Nome do usuário',
+                _username,
                 style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.black),
-              ),
-            ),
-            Center(
-              child: Text(
-                'Título do usuário',
-                style:
-                    TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
               ),
             ),
             Container(
@@ -160,16 +277,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: TextField(
                   keyboardType: TextInputType.multiline,
                   maxLines: 10,
-                  controller: null,
+                  controller: _aboutController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText:
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum',
+                    hintText: 'Fale um pouco sobre você...',
                   ),
                 ),
               ),
             ),
-             SizedBox(
+            SizedBox(
               height: 10,
             ),
           ],
@@ -185,17 +301,23 @@ class _ProfilePageState extends State<ProfilePage> {
           fit: BoxFit.cover,
         ),
       );
-  Widget buildProfileImage() => Container(
-        padding: EdgeInsets.all(4), // Adiciona um padding para a borda
-        decoration: BoxDecoration(
-          color: Colors.blue, // Cor da borda
-          shape: BoxShape.circle,
-        ),
-        child: CircleAvatar(
-          radius: profileHeight / 2,
-          backgroundColor: Colors.grey.shade800,
-          backgroundImage: NetworkImage(
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+
+  Widget buildProfileImage() => GestureDetector(
+        onTap: _showUrlDialog, // Permite a inserção da URL da imagem
+        child: Container(
+          padding: EdgeInsets.all(4), // Adiciona um padding para a borda
+          decoration: BoxDecoration(
+            color: Colors.blue, // Cor da borda
+            shape: BoxShape.circle, // Formato circular
+          ),
+          child: CircleAvatar(
+            radius: profileHeight / 2,
+            backgroundColor: Colors.grey.shade800,
+            backgroundImage: _profileImageUrl != null
+                ? NetworkImage(_profileImageUrl!)
+                : NetworkImage(
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+          ),
         ),
       );
 }

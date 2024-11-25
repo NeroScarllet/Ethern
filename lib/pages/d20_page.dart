@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/menu.dart';
@@ -36,8 +38,7 @@ class _D20PageState extends State<D20Page> {
 
   void _rollDice() {
     setState(() {
-      _randomNumber =
-          Random().nextInt(20) + 1; // Gera um número aleatório de 1 a 20
+      _randomNumber = Random().nextInt(20) + 1; // Gera um número aleatório de 1 a 20
     });
   }
 
@@ -52,7 +53,31 @@ class _D20PageState extends State<D20Page> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.person),
+            child: FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Icon(Icons.error);
+                } else if (!snapshot.hasData || snapshot.data == null) {
+                  return CircleAvatar(
+                    radius: 18,
+                    backgroundImage: NetworkImage('https://i.sstatic.net/mwFzF.png'),
+                  );
+                } else {
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final profileImageUrl = data['profileImageUrl'] ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU';
+                  return CircleAvatar(
+                    radius: 18,
+                    backgroundImage: NetworkImage(profileImageUrl),
+                  );
+                }
+              },
+            ),
           )
         ],
       ),

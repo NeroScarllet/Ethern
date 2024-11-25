@@ -21,6 +21,8 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> {
   int _selectedIndex = 0;
+  String _profileImageUrl =
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'; // Imagem padrão
   final List<Widget> _pages = [
     MenuPage(),
     CharacterListPage(),
@@ -28,6 +30,34 @@ class _MenuPageState extends State<MenuPage> {
     D20Page(),
     ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfileImage();
+  }
+
+  Future<void> _loadUserProfileImage() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      String userId = currentUser.uid;
+
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data =
+            documentSnapshot.data() as Map<String, dynamic>;
+
+        setState(() {
+          _profileImageUrl = data['profileImageUrl'] ??
+              _profileImageUrl; // Atualizar se disponível
+        });
+      }
+    }
+  }
 
   void _onTabChange(int index) {
     setState(() {
@@ -48,8 +78,11 @@ class _MenuPageState extends State<MenuPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.person),
-          )
+            child: CircleAvatar(
+              radius: 18,
+              backgroundImage: NetworkImage(_profileImageUrl),
+            ),
+          ),
         ],
       ),
       backgroundColor: Colors.grey[300],
@@ -117,10 +150,12 @@ class _MenuPageState extends State<MenuPage> {
                       Map<String, dynamic> data =
                           document.data() as Map<String, dynamic>;
                       return CharacterPreviewTile(
-                        ImagePath: 'lib/assets/images/Katsuo.png',
+                        ImagePath: data['imageUrl'] ??
+                            'https://i.sstatic.net/mwFzF.png',
                         Name: data['nome'] ?? 'Sem Nome',
                         Race: data['raca'] ?? 'Sem Raça',
                         Campaign: data['campanha'] ?? 'Sem Campanha',
+                        characterId: document.id, // Adicionado o characterId
                       );
                     }).toList(),
                   );
@@ -157,7 +192,7 @@ class _MenuPageState extends State<MenuPage> {
               height: 15,
             ),
             Container(
-              height: 400,
+              height: 280,
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('users')
@@ -177,7 +212,8 @@ class _MenuPageState extends State<MenuPage> {
                       Map<String, dynamic> data =
                           document.data() as Map<String, dynamic>;
                       return CampaignPreviewTile(
-                        ImagePath: 'lib/assets/images/LimiarCrescente.png',
+                        ImagePath: data['imageUrl'] ??
+                            'https://i.sstatic.net/mwFzF.png',
                         Name: data['nome'] ?? 'Sem Nome',
                         campaignId: document.id, // Adicionado o campaignId
                       );
@@ -237,8 +273,6 @@ class _MenuPageState extends State<MenuPage> {
           ],
         ),
       ),
-
-      // Botton Nav Bar
       bottomNavigationBar: Container(
         color: Colors.black,
         child: Padding(

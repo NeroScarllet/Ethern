@@ -9,6 +9,7 @@ class CharacterPreviewTile2 extends StatelessWidget {
   final String Description;
   final String Race;
   final String Campaign;
+  final String characterId;  // Adicionado para passar o ID do personagem
 
   const CharacterPreviewTile2({
     super.key,
@@ -17,6 +18,7 @@ class CharacterPreviewTile2 extends StatelessWidget {
     required this.Description,
     required this.Race,
     required this.Campaign,
+    required this.characterId,  // Adicionado para receber o ID do personagem
   });
 
   @override
@@ -28,7 +30,7 @@ class CharacterPreviewTile2 extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const CharacterSelectedPage(),
+              builder: (context) => CharacterSelectedPage(characterId: characterId),  // Passando o ID do personagem
             ),
           );
         },
@@ -43,10 +45,11 @@ class CharacterPreviewTile2 extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
+              Image.network(
                 ImagePath,
                 height: 120,
                 width: 120,
+                fit: BoxFit.cover,
               ),
               SizedBox(width: 8),
               Flexible(

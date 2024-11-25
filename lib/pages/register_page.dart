@@ -24,24 +24,28 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _usernameController.dispose();
     super.dispose();
   }
 
   Future signUp() async {
     if (passwordConfirmed()) {
-      final navigator = Navigator.of(context);
       try {
         // Create User
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+                email: _emailController.text.trim(),
+                password: _passwordController.text.trim());
         // Add user details
-        addUserDetails(_usernameController.text.trim());
-        
-        navigator
-            .push(MaterialPageRoute(builder: (context) => const MenuPage()));
+        await addUserDetails(
+            userCredential.user!.uid,
+            _usernameController.text.trim(),
+            _emailController.text.trim());
+
+        // Navigate to MenuPage
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const MenuPage()));
       } on FirebaseAuthException catch (e) {
         showDialog(
             context: context,
@@ -55,16 +59,18 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   bool passwordConfirmed() {
-    if (_passwordController.text.trim() == _confirmPasswordController) {
+    if (_passwordController.text.trim() ==
+        _confirmPasswordController.text.trim()) {
       return true;
     } else {
       return false;
     }
   }
 
-  Future addUserDetails(String username) async {
-    await FirebaseFirestore.instance.collection('users').add({
+  Future addUserDetails(String userId, String username, String email) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).set({
       'username': username,
+      'email': email,
     });
   }
 
@@ -73,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Login',
+          'Registro',
         ),
         backgroundColor: Colors.black,
         centerTitle: true,
@@ -111,7 +117,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 'Registre-se para iniciar sua aventura!',
                 style: TextStyle(color: Colors.black),
               ),
-
               SizedBox(height: 50),
               // Campo de texto - Nome de Usuário
               Padding(
@@ -134,7 +139,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-
               SizedBox(height: 10),
               // Campo de texto - Email
               Padding(
@@ -157,9 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-
               SizedBox(height: 10),
-
               // Campo de texto - Senha
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
@@ -182,9 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-
               SizedBox(height: 10),
-
               // Campo de texto - Confirmar Senha
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),

@@ -30,27 +30,38 @@ class CampaignPreviewTile extends StatelessWidget {
         },
         child: Container(
           padding: EdgeInsets.all(12),
+          width: 270,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: Colors.black54,
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(ImagePath, width: 270),
+                child: Image.network(
+                  ImagePath.isNotEmpty ? ImagePath : 'https://i.sstatic.net/mwFzF.png',
+                  height: 160,
+                  width: 270,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.network(
+                      'https://i.sstatic.net/mwFzF.png',
+                      height: 160,
+                      width: 270,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      Name,
-                      style: TextStyle(fontSize: 25, color: Colors.white, fontFamily: 'MedievalSharp'),
-                    ),
-                  ],
+                child: Text(
+                  Name,
+                  style: TextStyle(fontSize: 25, color: Colors.white, fontFamily: 'MedievalSharp'),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

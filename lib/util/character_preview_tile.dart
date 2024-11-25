@@ -8,6 +8,7 @@ class CharacterPreviewTile extends StatelessWidget {
   final String Name;
   final String Race;
   final String Campaign;
+  final String characterId;  // Adicionado para passar o ID do personagem
 
   const CharacterPreviewTile({
     super.key,
@@ -15,6 +16,7 @@ class CharacterPreviewTile extends StatelessWidget {
     required this.Name,
     required this.Race,
     required this.Campaign,
+    required this.characterId,  // Adicionado para receber o ID do personagem
   });
 
   @override
@@ -26,7 +28,7 @@ class CharacterPreviewTile extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const CharacterSelectedPage(),
+              builder: (context) => CharacterSelectedPage(characterId: characterId),  // Passando o ID do personagem
             ),
           );
         },
@@ -42,11 +44,15 @@ class CharacterPreviewTile extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(ImagePath),
+                child: Image.network(
+                  ImagePath.isNotEmpty ? ImagePath : 'https://i.sstatic.net/mwFzF.png',
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8),
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -67,15 +73,7 @@ class CharacterPreviewTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(Campaign, style: TextStyle(color: Colors.white)),
-                    Container(
-                        padding: EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(6)),
-                        child: Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                        )),
+
                   ],
                 ),
               )

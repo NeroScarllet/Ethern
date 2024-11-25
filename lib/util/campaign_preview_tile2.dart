@@ -42,10 +42,11 @@ class CampaignPreviewTile2 extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
+              Image.network(
                 ImagePath,
                 height: 120,
                 width: 120,
+                fit: BoxFit.cover,
               ),
               SizedBox(width: 8),
               Flexible(

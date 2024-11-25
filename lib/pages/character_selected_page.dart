@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ethern/pages/character_list_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CharacterSelectedPage extends StatefulWidget {
-  const CharacterSelectedPage({super.key});
+  final String? characterId; // Agora aceita um characterId opcional
+
+  const CharacterSelectedPage({super.key, this.characterId});
 
   @override
   State<CharacterSelectedPage> createState() => _CharacterSelectedPageState();
@@ -15,16 +16,19 @@ class Character {
   String sobre;
   String campanha;
   String raca;
+  String? imageUrl; // Adicionado para armazenar a URL da imagem
 
-  Character(
-      {required this.nome,
-      required this.sobre,
-      required this.campanha,
-      required this.raca});
+  Character({
+    required this.nome,
+    required this.sobre,
+    required this.campanha,
+    required this.raca,
+    this.imageUrl, // Inicializando a URL da imagem
+  });
 
   @override
   String toString() {
-    return 'Character(nome: $nome, sobre: $sobre, campanha: $campanha, raca: $raca)';
+    return 'Character(nome: $nome, sobre: $sobre, campanha: $campanha, raca: $raca, imageUrl: $imageUrl)';
   }
 
   Map<String, dynamic> toMap() {
@@ -33,6 +37,7 @@ class Character {
       'sobre': sobre,
       'campanha': campanha,
       'raca': raca,
+      'imageUrl': imageUrl,
     };
   }
 }
@@ -44,12 +49,100 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
   final _aboutController = TextEditingController();
   final _campaignController = TextEditingController();
   final _raceController = TextEditingController();
-  String? characterId; // Variable to hold the character ID
+  final TextEditingController _urlController =
+      TextEditingController(); // Controller para a URL da imagem
+  String?
+      _profileImageUrl; // Adicionado para armazenar a URL da imagem de perfil
 
-  Future createCharacter() async {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.characterId != null) {
+      _loadCharacterData();
+    }
+  }
+
+  Future<void> _showUrlDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible:
+          true, // Permite que o diálogo seja fechado ao clicar fora dele
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Insira a URL da nova imagem'),
+          content: TextField(
+            controller: _urlController,
+            decoration: InputDecoration(hintText: "URL da imagem"),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Salvar'),
+              onPressed: () {
+                setState(() {
+                  _profileImageUrl = _urlController.text;
+                });
+                _saveProfileImageUrl();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _saveProfileImageUrl() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null &&
+        _profileImageUrl != null &&
+        widget.characterId != null) {
+      String userId = currentUser.uid;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('characters')
+          .doc(widget.characterId!)
+          .update({'imageUrl': _profileImageUrl});
+    }
+  }
+
+  Future<void> _loadCharacterData() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && widget.characterId != null) {
+      String userId = currentUser.uid;
+
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('characters')
+          .doc(widget.characterId!)
+          .get();
+
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data =
+            documentSnapshot.data() as Map<String, dynamic>;
+
+        setState(() {
+          _nameController.text = data['nome'];
+          _aboutController.text = data['sobre'];
+          _campaignController.text = data['campanha'];
+          _raceController.text = data['raca'];
+          _profileImageUrl = data['imageUrl']; // Carregar a URL da imagem
+        });
+      }
+    }
+  }
+
+  Future<void> createCharacter() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      // Exibir uma mensagem de erro se nenhum usuário estiver logado
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -77,48 +170,68 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
       sobre: _aboutController.text,
       campanha: _campaignController.text,
       raca: _raceController.text,
+      imageUrl: _profileImageUrl, // Adicionar a URL da imagem
     );
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
-      await firestore
-          .collection('users')
-          .doc(userId)
-          .collection('characters')
-          .add(character.toMap());
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const CharacterListPage()));
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Text("Personagem adicionado com sucesso!"),
-          );
-        },
-      );
+      if (widget.characterId != null) {
+        // Atualizar o personagem existente
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('characters')
+            .doc(widget.characterId!)
+            .update(character.toMap());
+        Navigator.pop(context);
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text("Personagem atualizado com sucesso!"),
+            );
+          },
+        );
+      } else {
+        // Criar um novo personagem
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('characters')
+            .add(character.toMap());
+        Navigator.pop(context);
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text("Personagem adicionado com sucesso!"),
+            );
+          },
+        );
+      }
     } catch (e) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text("Erro ao adicionar personagem: $e"),
+            content: Text("Erro ao salvar personagem: $e"),
           );
         },
       );
     }
   }
 
-  Future deleteCharacter() async {
+  Future<void> deleteCharacter() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null || characterId == null) {
-      // Exibir uma mensagem de erro se nenhum usuário estiver logado ou characterId for nulo
+    if (currentUser == null || widget.characterId == null) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('Erro'),
-            content: Text('Nenhum usuário está logado ou characterId está vazio.'),
+            content:
+                Text('Nenhum usuário está logado ou characterId está vazio.'),
             actions: <Widget>[
               TextButton(
                 child: Text('OK'),
@@ -142,15 +255,14 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
           .collection('users')
           .doc(userId)
           .collection('characters')
-          .doc(characterId)
+          .doc(widget.characterId!)
           .delete();
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const CharacterListPage()));
+      Navigator.pop(context);
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text("Personagem deletado com sucesso!"),
+            content: Text("Personagem apagado com sucesso!"),
           );
         },
       );
@@ -159,64 +271,11 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text("Erro ao deletar personagem: $e"),
+            content: Text("Erro ao apagar personagem: $e"),
           );
         },
       );
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Perfil"),
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const CharacterListPage()));
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.person),
-          )
-        ],
-      ),
-      backgroundColor: Colors.grey[300],
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          buildTop(),
-          SizedBox(
-            height: 7,
-          ),
-          buildContent(),
-          SizedBox(height: 10,)
-        ],
-      ),
-    );
-  }
-
-  Widget buildTop() {
-    final bottom = profileHeight / 2;
-    final top = coverHeight - profileHeight / 2;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        Container(
-            margin: EdgeInsets.only(bottom: bottom), child: buildCoverImage()),
-        Positioned(top: top, child: buildProfileImage()),
-      ],
-    );
   }
 
   Widget buildContent() => Container(
@@ -226,7 +285,9 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
           children: [
             Center(
               child: Text(
-                'Nome do personagem',
+                _nameController.text.isNotEmpty
+                    ? _nameController.text
+                    : 'Nome do personagem',
                 style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -235,7 +296,9 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
             ),
             Center(
               child: Text(
-                'Campanha do personagem',
+                _campaignController.text.isNotEmpty
+                    ? _campaignController.text
+                    : 'Nome da campanha',
                 style:
                     TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
               ),
@@ -268,7 +331,9 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
                   controller: _aboutController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: '',
+                    hintText: _aboutController.text.isNotEmpty
+                        ? _aboutController.text
+                        : 'Sobre o personagem',
                   ),
                 ),
               ),
@@ -392,6 +457,81 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
         ),
       );
 
+  Widget buildTop() {
+    final bottom = profileHeight / 2;
+    final top = coverHeight - profileHeight / 2;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        Container(
+            margin: EdgeInsets.only(bottom: bottom), child: buildCoverImage()),
+        Positioned(top: top, child: buildProfileImage()),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Personagens"),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Icon(Icons.error);
+                } else if (!snapshot.hasData || snapshot.data == null) {
+                  return CircleAvatar(
+                    radius: 18,
+                    backgroundImage:
+                        NetworkImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+                  );
+                } else {
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final profileImageUrl = data['profileImageUrl'] ??
+                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU';
+                  return CircleAvatar(
+                    radius: 18,
+                    backgroundImage: NetworkImage(profileImageUrl),
+                  );
+                }
+              },
+            ),
+          )
+        ],
+      ),
+      backgroundColor: Colors.grey[300],
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          buildTop(),
+          SizedBox(
+            height: 7,
+          ),
+          buildContent(),
+        ],
+      ),
+    );
+  }
+
   Widget buildCoverImage() => Container(
         color: Colors.grey,
         child: Image.network(
@@ -402,17 +542,22 @@ class _CharacterSelectedPageState extends State<CharacterSelectedPage> {
         ),
       );
 
-  Widget buildProfileImage() => Container(
-        padding: EdgeInsets.all(4), // Adiciona um padding para a borda
-        decoration: BoxDecoration(
-          color: Colors.blue, // Cor da borda
-          shape: BoxShape.circle,
-        ),
-        child: CircleAvatar(
-          radius: profileHeight / 2,
-          backgroundColor: Colors.grey.shade800,
-          backgroundImage: NetworkImage(
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+  Widget buildProfileImage() => GestureDetector(
+        onTap: _showUrlDialog, // Permite a inserção da URL da imagem
+        child: Container(
+          padding: EdgeInsets.all(4), // Adiciona um padding para a borda
+          decoration: BoxDecoration(
+            color: Colors.blue, // Cor da borda
+            shape: BoxShape.circle, // Formato circular
+          ),
+          child: CircleAvatar(
+            radius: profileHeight / 2,
+            backgroundColor: Colors.grey.shade800,
+            backgroundImage: _profileImageUrl != null
+                ? NetworkImage(_profileImageUrl!)
+                : NetworkImage(
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+          ),
         ),
       );
 }

@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CampaignSelectedPage extends StatefulWidget {
-  final String? campaignId; // O campaignId é agora opcional
+  final String? campaignId; // Agora aceita um campaignId opcional
 
   const CampaignSelectedPage({super.key, this.campaignId});
 
@@ -16,16 +15,18 @@ class Campaign {
   String nome;
   String verso;
   String sobre;
+  String? imageUrl; // Adicionado para armazenar a URL da imagem
 
   Campaign({
     required this.nome,
     required this.verso,
     required this.sobre,
+    this.imageUrl, // Inicializando a URL da imagem
   });
 
   @override
   String toString() {
-    return 'Campaign(nome: $nome, verso: $verso, sobre: $sobre)';
+    return 'Campaign(nome: $nome, verso: $verso, sobre: $sobre, imageUrl: $imageUrl)';
   }
 
   Map<String, dynamic> toMap() {
@@ -33,6 +34,7 @@ class Campaign {
       'nome': nome,
       'verso': verso,
       'sobre': sobre,
+      'imageUrl': imageUrl,
     };
   }
 }
@@ -43,12 +45,67 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
   final _nameController = TextEditingController();
   final _verseController = TextEditingController();
   final _aboutController = TextEditingController();
+  final TextEditingController _urlController =
+      TextEditingController(); // Controller para a URL da imagem
+  String?
+      _profileImageUrl; // Adicionado para armazenar a URL da imagem de perfil
 
   @override
   void initState() {
     super.initState();
     if (widget.campaignId != null) {
       _loadCampaignData();
+    }
+  }
+
+  Future<void> _showUrlDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible:
+          true, // Permite que o diálogo seja fechado ao clicar fora dele
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Insira a URL da nova imagem'),
+          content: TextField(
+            controller: _urlController,
+            decoration: InputDecoration(hintText: "URL da imagem"),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Salvar'),
+              onPressed: () {
+                setState(() {
+                  _profileImageUrl = _urlController.text;
+                });
+                _saveProfileImageUrl();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _saveProfileImageUrl() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null &&
+        _profileImageUrl != null &&
+        widget.campaignId != null) {
+      String userId = currentUser.uid;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('campaigns')
+          .doc(widget.campaignId!)
+          .update({'imageUrl': _profileImageUrl});
     }
   }
 
@@ -61,7 +118,7 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
           .collection('users')
           .doc(userId)
           .collection('campaigns')
-          .doc(widget.campaignId)
+          .doc(widget.campaignId!)
           .get();
 
       if (documentSnapshot.exists) {
@@ -72,12 +129,13 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
           _nameController.text = data['nome'];
           _verseController.text = data['verso'];
           _aboutController.text = data['sobre'];
+          _profileImageUrl = data['imageUrl']; // Carregar a URL da imagem
         });
       }
     }
   }
 
-  Future createCampaign() async {
+  Future<void> createCampaign() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       showDialog(
@@ -106,32 +164,21 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
       nome: _nameController.text,
       verso: _verseController.text,
       sobre: _aboutController.text,
+      imageUrl: _profileImageUrl, // Adicionar a URL da imagem
     );
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
-      if (widget.campaignId == null) {
+      if (widget.campaignId != null) {
+        // Atualizar a campanha existente
         await firestore
             .collection('users')
             .doc(userId)
             .collection('campaigns')
-            .add(campaign.toMap());
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              content: Text("Campanha adicionada com sucesso!"),
-            );
-          },
-        );
-      } else {
-        await firestore
-            .collection('users')
-            .doc(userId)
-            .collection('campaigns')
-            .doc(widget.campaignId)
+            .doc(widget.campaignId!)
             .update(campaign.toMap());
+        Navigator.pop(context);
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -140,22 +187,36 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
             );
           },
         );
+      } else {
+        // Criar uma nova campanha
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('campaigns')
+            .add(campaign.toMap());
+        Navigator.pop(context);
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text("Campanha adicionada com sucesso!"),
+            );
+          },
+        );
       }
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const CampaignListPage()));
     } catch (e) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text("Erro ao adicionar campanha: $e"),
+            content: Text("Erro ao salvar campanha: $e"),
           );
         },
       );
     }
   }
 
-  Future deleteCampaign() async {
+  Future<void> deleteCampaign() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null || widget.campaignId == null) {
       showDialog(
@@ -188,10 +249,9 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
           .collection('users')
           .doc(userId)
           .collection('campaigns')
-          .doc(widget.campaignId)
+          .doc(widget.campaignId!)
           .delete();
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const CampaignListPage()));
+      Navigator.pop(context);
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -212,59 +272,6 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Perfil"),
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const CampaignListPage()));
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.person),
-          )
-        ],
-      ),
-      backgroundColor: Colors.grey[300],
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          buildTop(),
-          SizedBox(
-            height: 7,
-          ),
-          buildContent(),
-          SizedBox(height: 10,)
-        ],
-      ),
-    );
-  }
-
-  Widget buildTop() {
-    final bottom = profileHeight / 2;
-    final top = coverHeight - profileHeight / 2;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        Container(
-            margin: EdgeInsets.only(bottom: bottom), child: buildCoverImage()),
-        Positioned(top: top, child: buildProfileImage()),
-      ],
-    );
-  }
-
   Widget buildContent() => Container(
         padding: EdgeInsets.symmetric(horizontal: 48),
         child: Column(
@@ -272,7 +279,9 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
           children: [
             Center(
               child: Text(
-                _nameController.text, // Nome da campanha
+                _nameController.text.isNotEmpty
+                    ? _nameController.text
+                    : 'Nome da campanha',
                 style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -281,7 +290,9 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
             ),
             Center(
               child: Text(
-                _verseController.text, // Nome do verso
+                _verseController.text.isNotEmpty
+                    ? _verseController.text
+                    : 'Verso da campanha',
                 style:
                     TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
               ),
@@ -314,7 +325,9 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
                   controller: _aboutController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: _aboutController.text, // Descrição da campanha
+                    hintText: _aboutController.text.isNotEmpty
+                        ? _aboutController.text
+                        : 'Sobre a campanha',
                   ),
                 ),
               ),
@@ -335,7 +348,7 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
                   controller: _nameController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: _nameController.text, // Nome da campanha
+                    hintText: 'Nome da campanha',
                   ),
                 ),
               ),
@@ -344,7 +357,7 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
               height: 10,
             ),
             Text(
-              'Nome do verso',
+              'Verso da campanha',
               style: TextStyle(fontSize: 18, height: 1.4, color: Colors.black),
             ),
             Container(
@@ -358,7 +371,7 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
                   controller: _verseController,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: _verseController.text, // Nome do verso
+                    hintText: 'Verso da campanha',
                   ),
                 ),
               ),
@@ -414,6 +427,82 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
           ],
         ),
       );
+
+  Widget buildTop() {
+    final bottom = profileHeight / 2;
+    final top = coverHeight - profileHeight / 2;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        Container(
+            margin: EdgeInsets.only(bottom: bottom), child: buildCoverImage()),
+        Positioned(top: top, child: buildProfileImage()),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Campanha"),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Icon(Icons.error);
+                } else if (!snapshot.hasData || snapshot.data == null) {
+                  return CircleAvatar(
+                    radius: 18,
+                    backgroundImage:
+                        NetworkImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+                  );
+                } else {
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final profileImageUrl = data['profileImageUrl'] ??
+                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU';
+                  return CircleAvatar(
+                    radius: 18,
+                    backgroundImage: NetworkImage(profileImageUrl),
+                  );
+                }
+              },
+            ),
+          )
+        ],
+      ),
+      backgroundColor: Colors.grey[300],
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          buildTop(),
+          SizedBox(
+            height: 7,
+          ),
+          buildContent(),
+        ],
+      ),
+    );
+  }
+
   Widget buildCoverImage() => Container(
         color: Colors.grey,
         child: Image.network(
@@ -424,17 +513,22 @@ class _CampaignSelectedPageState extends State<CampaignSelectedPage> {
         ),
       );
 
-  Widget buildProfileImage() => Container(
-        padding: EdgeInsets.all(4), // Adiciona um padding para a borda
-        decoration: BoxDecoration(
-          color: Colors.blue, // Cor da borda
-          shape: BoxShape.circle,
-        ),
-        child: CircleAvatar(
-          radius: profileHeight / 2,
-          backgroundColor: Colors.grey.shade800,
-          backgroundImage: NetworkImage(
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAxxVodD07h3CI901DNtkUIhgRJ0HqS2bGVskSwY54xNSm9_-ynW8X_UfzeGQCuBvH6NI&usqp=CAU'),
+  Widget buildProfileImage() => GestureDetector(
+        onTap: _showUrlDialog, // Permite a inserção da URL da imagem
+        child: Container(
+          padding: EdgeInsets.all(4), // Adiciona um padding para a borda
+          decoration: BoxDecoration(
+            color: Colors.blue, // Cor da borda
+            shape: BoxShape.circle, // Formato circular
+          ),
+          child: CircleAvatar(
+            radius: profileHeight / 2,
+            backgroundColor: Colors.grey.shade800,
+            backgroundImage: _profileImageUrl != null
+                ? NetworkImage(_profileImageUrl!)
+                : NetworkImage(
+                    'https://i.sstatic.net/mwFzF.png'),
+          ),
         ),
       );
 }
