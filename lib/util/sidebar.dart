@@ -13,9 +13,10 @@ class SideBar extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const HomePage()),
+      (Route<dynamic> route) => false, // Remove todas as rotas anteriores
     );
   }
 
