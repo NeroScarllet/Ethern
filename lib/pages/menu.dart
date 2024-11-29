@@ -4,10 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
 import 'package:ethern/pages/d20_page.dart';
-import 'package:ethern/pages/home.dart';
 import 'package:ethern/pages/profile_page.dart';
 import 'package:ethern/util/campaign_preview_tile.dart';
 import 'package:ethern/util/character_preview_tile.dart';
+import 'package:ethern/util/sidebar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -74,7 +74,6 @@ class _MenuPageState extends State<MenuPage> {
         title: Text("Menu"),
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: Icon(Icons.menu),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -86,6 +85,7 @@ class _MenuPageState extends State<MenuPage> {
         ],
       ),
       backgroundColor: Colors.grey[300],
+      drawer: SideBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -250,7 +250,7 @@ class _MenuPageState extends State<MenuPage> {
               height: 15,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 15.0),
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(context,
@@ -260,15 +260,6 @@ class _MenuPageState extends State<MenuPage> {
                     borderRadius: BorderRadius.circular(12),
                     child: Image.asset("lib/assets/images/d20_preview.png")),
               ),
-            ),
-            MaterialButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const HomePage()));
-              },
-              color: Colors.blue,
-              child: Text('Deslogar'),
             ),
           ],
         ),

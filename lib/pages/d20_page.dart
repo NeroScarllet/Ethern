@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ethern/util/sidebar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
@@ -49,7 +50,6 @@ class _D20PageState extends State<D20Page> {
         title: Text("D20"),
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: Icon(Icons.menu),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -82,6 +82,7 @@ class _D20PageState extends State<D20Page> {
         ],
       ),
       backgroundColor: Colors.grey[300],
+      drawer: SideBar(),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

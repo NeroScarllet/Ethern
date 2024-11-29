@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ethern/util/sidebar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ethern/pages/campaign_list_page.dart';
 import 'package:ethern/pages/character_list_page.dart';
@@ -153,7 +154,6 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text("Perfil"),
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: Icon(Icons.menu),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -168,6 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       backgroundColor: Colors.grey[300],
+      drawer: SideBar(),
       body: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[

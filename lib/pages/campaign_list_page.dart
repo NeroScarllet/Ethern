@@ -5,6 +5,7 @@ import 'package:ethern/pages/d20_page.dart';
 import 'package:ethern/pages/menu.dart';
 import 'package:ethern/pages/profile_page.dart';
 import 'package:ethern/util/campaign_preview_tile2.dart';
+import 'package:ethern/util/sidebar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -41,7 +42,6 @@ class _CampaignListPageState extends State<CampaignListPage> {
         title: Text("Campanhas"),
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: Icon(Icons.menu),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -73,6 +73,7 @@ class _CampaignListPageState extends State<CampaignListPage> {
           )
         ],
       ),
+      drawer: SideBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
